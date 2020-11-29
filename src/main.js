@@ -17,11 +17,16 @@
 import Vue from 'vue';
 import DashboardPlugin from './plugins/dashboard-plugin';
 import App from './App.vue';
+import VueGoodTablePlugin from 'vue-good-table';
+import 'vue-good-table/dist/vue-good-table.css'
+
 
 // router setup
 import router from './routes/router';
 // plugin setup
 Vue.use(DashboardPlugin);
+Vue.use(VueGoodTablePlugin);
+
 
 /* eslint-disable no-new */
 new Vue({

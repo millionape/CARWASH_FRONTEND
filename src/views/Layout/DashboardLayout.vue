@@ -14,8 +14,8 @@
 
         <sidebar-item
             :link="{
-              name: 'Icons',
-              path: '/icons',
+              name: 'Devices',
+              path: '/devices',
               icon: 'ni ni-planet text-blue'
               }"
             >

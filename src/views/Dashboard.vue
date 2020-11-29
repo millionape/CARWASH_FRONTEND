@@ -9,7 +9,7 @@
             type="gradient-info"
             sub-title="49,65%"
             icon="ni ni-chart-bar-32"
-            class="mb-4"
+            class="mb-4 statusCard"
           >
             <template slot="footer">
               <!-- <span class="text-success mr-2">54.8%</span>
@@ -23,7 +23,7 @@
             type="gradient-red"
             :sub-title="String(numberWithCommas(month_total)) + ' BTH'"
             icon="ni ni-active-40"
-            class="mb-4"
+            class="mb-4 statusCard"
           >
             <template slot="footer">
               <!-- <span class="text-success mr-2">3.48%</span>
@@ -37,7 +37,7 @@
             type="gradient-orange"
             :sub-title="String(numberWithCommas(seven_day_total)) + ' BTH'"
             icon="ni ni-chart-pie-35"
-            class="mb-4"
+            class="mb-4 statusCard"
           >
             <template slot="footer">
               <!-- <span class="text-success mr-2">12.18%</span>
@@ -51,7 +51,7 @@
             type="gradient-green"
             :sub-title="String(numberWithCommas(day_total)) + ' BTH'"
             icon="ni ni-money-coins"
-            class="mb-4"
+            class="mb-4 statusCard"
           >
             <template slot="footer">
               <!-- <span class="text-danger mr-2">5.72%</span>
@@ -65,12 +65,26 @@
     <!--Charts-->
     <b-container fluid class="mt--7">
       <b-row>
-        <b-col xl="7" class="mb-5 mb-xl-0">
-          <card header-classes="bg-transparent">
+        <b-col xl="12" class="mb-5 mb-xl-0">
+          <card header-classes="bg-transparent" class="h-100 graphCard">
             <b-row align-v="center" slot="header">
               <b-col>
                 <h6 class="text-uppercase text-muted ls-1 mb-1">Income</h6>
-                <h5 class="h3 mb-0">Current income in last 7 days</h5>
+                <h5 class="h3 mb-0">Current income by devices</h5>
+              </b-col>
+            </b-row>
+
+            <canvas style="height:100%; width:100%" id="my-chart"></canvas>
+          </card>
+        </b-col>
+        <br/>
+        <br/>
+        <b-col xl="12" class="mb-5 mt-5 mb-xl-0">
+          <card header-classes="bg-transparent" class="graphCard">
+            <b-row align-v="center" slot="header">
+              <b-col>
+                <h6 class="text-uppercase text-muted ls-1 mb-1">Income</h6>
+                <h5 class="h3 mb-0">Income in last 7 days</h5>
               </b-col>
               <b-col>
                 <b-nav class="nav-pills justify-content-end">
@@ -92,20 +106,7 @@
                 </b-nav>
               </b-col>
             </b-row>
-            <canvas style="height:350px;" id="big-chart"></canvas>
-          </card>
-        </b-col>
-
-        <b-col xl="5" class="mb-5 mb-xl-0">
-          <card header-classes="bg-transparent" class="h-100">
-            <b-row align-v="center" slot="header">
-              <b-col>
-                <h6 class="text-uppercase text-muted ls-1 mb-1">Income</h6>
-                <h5 class="h3 mb-0">Current income by devices</h5>
-              </b-col>
-            </b-row>
-
-            <canvas style="height:100%; width:100%" id="my-chart"></canvas>
+            <canvas style="height:100%; width:100%" id="big-chart"></canvas>
           </card>
         </b-col>
       </b-row>
@@ -113,12 +114,12 @@
 
       <!--Tables-->
       <b-row class="mt-5">
-        <b-col xl="8" class="mb-5 mb-xl-0">
+        <b-col xl="12" class="mb-5 mb-xl-0">
           <page-visits-table></page-visits-table>
         </b-col>
-        <b-col xl="4" class="mb-5 mb-xl-0">
+        <!-- <b-col xl="4" class="mb-5 mb-xl-0">
           <social-traffic-table></social-traffic-table>
-        </b-col>
+        </b-col> -->
       </b-row>
       <!--End tables-->
     </b-container>
@@ -151,7 +152,7 @@ export default {
   },
   data() {
     return {
-      SERVER_URL: "http://192.168.1.72:3000",
+      SERVER_URL: "http://0.0.0.0:3000",
       day_total: 0,
       month_total: 0,
       seven_day_total: 0,
@@ -206,7 +207,7 @@ export default {
       let date = moment(m).format("YYYY-MM-DD HH:mm:ss");
       await axios
         .get(
-          `${this.SERVER_URL}/getTotalIncomeInDay?site=Chantaburi-1&sdate=${date}`
+          `${this.SERVER_URL}/getTotalIncomeInDay?site=Rayong-1&sdate=${date}`
         )
         .then(response => {
           console.log(response);
@@ -239,37 +240,25 @@ export default {
         });
     },
     async getTotalIncome_last_7_days() {
-      var m = moment();
-      m = m.subtract(7, "days");
-      m.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-      let date = moment(m).format("YYYY-MM-DD HH:mm:ss");
+      // var m = moment();
+      // m = m.subtract(7, "days");
+      // m.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+      let date = moment().format("YYYY-MM-DD HH:mm:ss");
       await axios
         .get(
-          `${this.SERVER_URL}/getTotalIncomeInDay?site=Chantaburi-1&sdate=${date}`
+          `${this.SERVER_URL}/getTotalIncomeLast7Days?site=Rayong-1&date=${date}`
         )
         .then(response => {
-          console.log(response);
+          console.log("7days income :",response);
           this.seven_day_total = 0;
+          this.bigLineChart.chartData.labels = [];
+          this.bigLineChart.chartData.datasets = [];
           if (response.data.length > 0) {
-            for (let transection of response.data) {
-              this.seven_day_total += transection.insertedCredit;
-            }
-            console.log("seven_day_total : ", this.seven_day_total);
-            var grouped = _.groupBy(response.data, function(item) {
-              return moment(item.updatedDate).format("YYYY-MM-DD");
-            });
-            console.log("GROUPED ITEMS :", grouped);
-            this.bigLineChart.chartData.labels = [];
-            this.bigLineChart.chartData.datasets = [];
-            for (let key in grouped) {
-              this.bigLineChart.chartData.labels.push(key);
-              let tmp_counter = 0;
-              console.log("push key :", key);
-              for (let items of grouped[key]) {
-                tmp_counter += items.insertedCredit;
-                // console.log("add money :",tmp_counter);
-              }
-              this.bigLineChart.chartData.datasets.push(tmp_counter);
+            for (let incomes of response.data) {
+              this.seven_day_total += incomes.money;
+              let income_date = moment().date(incomes.day).format("YYYY-MM-DD");
+              this.bigLineChart.chartData.labels.push(income_date);
+              this.bigLineChart.chartData.datasets.push(incomes.money);
             }
           }
         })
@@ -283,15 +272,13 @@ export default {
         .format("YYYY-MM-DD HH:mm:ss");
       await axios
         .get(
-          `${this.SERVER_URL}/getTotalIncomeInDay?site=Chantaburi-1&sdate=${startOfMonth}`
+          `${this.SERVER_URL}/getTotalIncomeInMonth?site=Rayong-1&sdate=${startOfMonth}`
         )
         .then(response => {
           console.log(response);
           this.month_total = 0;
           if (response.data.length > 0) {
-            for (let transection of response.data) {
-              this.month_total += transection.insertedCredit;
-            }
+            this.month_total = response.data[0].money;
             console.log("month_total : ", this.month_total);
           }
         })
@@ -361,9 +348,15 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss">
 .el-table .cell {
   padding-left: 0px;
   padding-right: 0px;
+}
+.graphCard {
+  height: 600px !important;
+}
+.statusCard {
+  height: 8rem !important;
 }
 </style>
