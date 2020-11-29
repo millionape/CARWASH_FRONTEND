@@ -84,7 +84,7 @@
             <b-row align-v="center" slot="header">
               <b-col>
                 <h6 class="text-uppercase text-muted ls-1 mb-1">Income</h6>
-                <h5 class="h3 mb-0">Income in last 7 days</h5>
+                <h5 class="h3 mb-0">Total Income Graph</h5>
               </b-col>
               <b-col>
                 <b-nav class="nav-pills justify-content-end">
