@@ -29,7 +29,7 @@ export default {
     return {
       deviceList: [],
       polling: null,
-      SERVER_URL: "http://0.0.0.0:3000",
+      SERVER_URL: "http://134.209.101.192:3000",
       columns: [
         {
           label: 'Updated Date',

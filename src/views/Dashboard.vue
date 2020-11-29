@@ -7,7 +7,7 @@
           <stats-card
             title="Total income in this year"
             type="gradient-info"
-            sub-title="49,65%"
+            :sub-title="String(numberWithCommas(year_total)) + ' BTH'"
             icon="ni ni-chart-bar-32"
             class="mb-4 statusCard"
           >
@@ -91,16 +91,16 @@
                   <b-nav-item
                     class="mr-2 mr-md-0"
                     link-classes="py-2 px-3"
-                    @click.prevent="initBigChart(0)"
+                    @click.prevent="chartTypeSelected = 'month'; initTotalChart()"
                   >
-                    <span class="d-none d-md-block">Month</span>
+                    <span class="d-none d-md-block">Week</span>
                     <span class="d-md-none">M</span>
                   </b-nav-item>
                   <b-nav-item
                     link-classes="py-2 px-3"
-                    @click.prevent="initBigChart(1)"
+                    @click.prevent="chartTypeSelected = 'year'; initTotalChart()"
                   >
-                    <span class="d-none d-md-block">Week</span>
+                    <span class="d-none d-md-block">Month</span>
                     <span class="d-md-none">W</span>
                   </b-nav-item>
                 </b-nav>
@@ -152,10 +152,13 @@ export default {
   },
   data() {
     return {
-      SERVER_URL: "http://0.0.0.0:3000",
+      SERVER_URL: "http://134.209.101.192:3000",
+      // SERVER_URL: "http://0.0.0.0:3000",
       day_total: 0,
       month_total: 0,
       seven_day_total: 0,
+      year_total: 0,
+      chartTypeSelected: 'month',
       barChartRender: false,
       bigLineChart: {
         activeIndex: 0,
@@ -181,6 +184,14 @@ export default {
           ]
         },
         extraOptions: chartConfigs.blueChartOptions
+      },
+      monthChart:{
+        labels:[],
+        data:[],
+      },
+      yearChart:{
+        labels:[],
+        data:[],
       }
     };
   },
@@ -251,14 +262,47 @@ export default {
         .then(response => {
           console.log("7days income :",response);
           this.seven_day_total = 0;
-          this.bigLineChart.chartData.labels = [];
+          this.monthChart.data = [];
           this.bigLineChart.chartData.datasets = [];
           if (response.data.length > 0) {
             for (let incomes of response.data) {
               this.seven_day_total += incomes.money;
               let income_date = moment().date(incomes.day).format("YYYY-MM-DD");
-              this.bigLineChart.chartData.labels.push(income_date);
-              this.bigLineChart.chartData.datasets.push(incomes.money);
+              this.monthChart.labels.push(income_date);
+              this.monthChart.data.push(incomes.money);
+              // this.bigLineChart.chartData.labels.push(income_date);
+              // this.bigLineChart.chartData.datasets.push(incomes.money);
+            }
+          }
+        })
+        .catch(e => {
+          console.log("ERROR |", e);
+        });
+    },
+    async getTotalIncome_year() {
+      // var m = moment();
+      // m = m.subtract(7, "days");
+      // m.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+      let date = moment().format("YYYY-MM-DD HH:mm:ss");
+      await axios
+        .get(
+          `${this.SERVER_URL}/getTotalIncomeThisYear?site=Rayong-1&date=${date}`
+        )
+        .then(response => {
+          console.log("7days income :",response);
+          this.year_total = 0;
+          // this.bigLineChart.chartData.labels = [];
+          // this.bigLineChart.chartData.datasets = [];
+          this.yearChart.labels = [];
+          this.yearChart.data = [];
+          if (response.data.length > 0) {
+            for (let incomes of response.data) {
+              this.year_total += incomes.money;
+              let income_date = moment().date(incomes.month).format("YYYY-MM");
+              // this.bigLineChart.chartData.labels.push(income_date);
+              // this.bigLineChart.chartData.datasets.push(incomes.money);
+              this.yearChart.data.push(incomes.money)
+              this.yearChart.labels.push(income_date);
             }
           }
         })
@@ -318,14 +362,15 @@ export default {
     initTotalChart() {
       var ctx = document.getElementById("big-chart");
       var myChart = new Chart(ctx, {
-        type: "line",
+        type: this.chartTypeSelected === "month" ? "line": "bar",
         data: {
-          labels: this.bigLineChart.chartData.labels,
+          labels: this.chartTypeSelected === "month" ? this.monthChart.labels : this.yearChart.labels,
           datasets: [
             {
               label: "Income",
-              data: this.bigLineChart.chartData.datasets,
+              data: this.chartTypeSelected === "month" ? this.monthChart.data : this.yearChart.data,
               borderColor: "#6E7EF5",
+              backgroundColor: "#6E7EF5",
               fill: false
             }
           ]
@@ -348,6 +393,7 @@ export default {
     await this.getTotalIncome_day();
     await this.getTotalIncome_month();
     await this.getTotalIncome_last_7_days();
+    await this.getTotalIncome_year();
     this.initTotalChart();
     this.initDevicesChart();
     loader.hide();

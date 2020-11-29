@@ -63,7 +63,7 @@ export default {
       deviceList: [],
       polling: null,
       selectedDeviceId: null,
-      SERVER_URL: "http://0.0.0.0:3000",
+      SERVER_URL: "http://134.209.101.192:3000",
     };
   },
   methods: {
