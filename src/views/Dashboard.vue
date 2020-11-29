@@ -94,14 +94,14 @@
                     @click.prevent="chartTypeSelected = 'month'; initTotalChart()"
                   >
                     <span class="d-none d-md-block">Week</span>
-                    <span class="d-md-none">M</span>
+                    <span class="d-md-none">W</span>
                   </b-nav-item>
                   <b-nav-item
                     link-classes="py-2 px-3"
                     @click.prevent="chartTypeSelected = 'year'; initTotalChart()"
                   >
                     <span class="d-none d-md-block">Month</span>
-                    <span class="d-md-none">W</span>
+                    <span class="d-md-none">Y</span>
                   </b-nav-item>
                 </b-nav>
               </b-col>
