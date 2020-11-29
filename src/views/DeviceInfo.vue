@@ -57,6 +57,11 @@ export default {
   },
   methods: {
     async getHistory(deviceId) {
+      let loader = this.$loading.show({
+      // Optional parameters
+      color: 'blue',
+      canCancel: true,
+    });
     var sdate = moment().subtract(7, "days").format("YYYY-MM-DD HH:mm:ss");
     var edate = moment().format("YYYY-MM-DD HH:mm:ss");
       await axios
@@ -64,9 +69,11 @@ export default {
         .then((response) => {
           console.log("HISTORY lIST ", response);
           this.rows = response.data;
+          loader.hide();
         })
         .catch((e) => {
           console.log("ERROR |", e);
+          loader.hide();
         });
     },
   },

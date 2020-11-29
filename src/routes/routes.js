@@ -3,6 +3,13 @@ import AuthLayout from '@/views/Pages/AuthLayout.vue';
 
 import NotFound from '@/views/NotFoundPage.vue';
 
+const ifAuthenticated = (to, from, next) => {
+  if (localStorage.getItem('auth_state') !== null) {
+    next()
+    return
+  }
+  next('/login')
+}
 const routes = [
   {
     path: '/',
@@ -12,6 +19,7 @@ const routes = [
       {
         path: '/dashboard',
         name: 'dashboard',
+        beforeEnter: ifAuthenticated,
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -20,6 +28,7 @@ const routes = [
       {
         path: '/devices',
         name: 'devices',
+        beforeEnter: ifAuthenticated,
         component: () => import(/* webpackChunkName: "demo" */ '../views/Devices.vue')
       },
       {

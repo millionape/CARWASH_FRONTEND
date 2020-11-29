@@ -1,5 +1,8 @@
 <template>
-  <router-view></router-view>
+  <router-view>
+    <notifications group="foo" />
+  </router-view>
+  
 </template>
 
 <script>

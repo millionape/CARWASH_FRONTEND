@@ -53,7 +53,7 @@
                     </a>
                     <a href="#" class="avatar avatar-sm rounded-circle" data-toggle="tooltip"
                        data-original-title="Jessica Doe">
-                        <img alt="Image placeholder" src="img/theme/team-4.jpg">
+                        <img alt="Image placeholder" src="img/theme/man.png">
                     </a>
                 </div>
             </el-table-column>

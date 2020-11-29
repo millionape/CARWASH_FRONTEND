@@ -340,11 +340,17 @@ export default {
     this.initBigChart(0);
   },
   async created() {
+    let loader = this.$loading.show({
+      // Optional parameters
+      color: 'blue',
+      canCancel: true,
+    });
     await this.getTotalIncome_day();
     await this.getTotalIncome_month();
     await this.getTotalIncome_last_7_days();
     this.initTotalChart();
     this.initDevicesChart();
+    loader.hide();
   }
 };
 </script>

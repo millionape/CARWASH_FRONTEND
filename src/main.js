@@ -18,6 +18,11 @@ import Vue from 'vue';
 import DashboardPlugin from './plugins/dashboard-plugin';
 import App from './App.vue';
 import VueGoodTablePlugin from 'vue-good-table';
+import Notifications from 'vue-notification';
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
+
+
 import 'vue-good-table/dist/vue-good-table.css'
 
 
@@ -26,6 +31,8 @@ import router from './routes/router';
 // plugin setup
 Vue.use(DashboardPlugin);
 Vue.use(VueGoodTablePlugin);
+Vue.use(Notifications);
+Vue.use(Loading);
 
 
 /* eslint-disable no-new */

@@ -36,10 +36,10 @@
         <a href="#" class="nav-link pr-0" @click.prevent slot="title-container">
           <b-media no-body class="align-items-center">
                   <span class="avatar avatar-sm rounded-circle">
-                    <img alt="Image placeholder" src="img/theme/team-4.jpg">
+                    <img alt="Image placeholder" src="img/theme/man.png">
                   </span>
             <b-media-body class="ml-2 d-none d-lg-block">
-              <span class="mb-0 text-sm  font-weight-bold">John Snow</span>
+              <span class="mb-0 text-sm  font-weight-bold">Somkid carwash</span>
             </b-media-body>
           </b-media>
         </a>
@@ -49,7 +49,7 @@
           <b-dropdown-header class="noti-title">
             <h6 class="text-overflow m-0">Welcome!</h6>
           </b-dropdown-header>
-          <b-dropdown-item href="#!">
+          <!-- <b-dropdown-item href="#!">
             <i class="ni ni-single-02"></i>
             <span>My profile</span>
           </b-dropdown-item>
@@ -65,8 +65,8 @@
             <i class="ni ni-support-16"></i>
             <span>Support</span>
           </b-dropdown-item>
-          <div class="dropdown-divider"></div>
-          <b-dropdown-item href="#!">
+          <div class="dropdown-divider"></div> -->
+          <b-dropdown-item href="#!" @click="logout">
             <i class="ni ni-user-run"></i>
             <span>Logout</span>
           </b-dropdown-item>
@@ -108,6 +108,10 @@ export default {
     };
   },
   methods: {
+    logout(){
+        localStorage.clear();
+        this.$router.push('login');
+      },
     capitalizeFirstLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
