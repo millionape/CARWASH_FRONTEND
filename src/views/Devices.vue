@@ -50,7 +50,7 @@ import BaseHeader from "@/components/BaseHeader";
 import axios from "axios";
 import moment from "moment";
 import DeviceInfo from "./DeviceInfo";
-
+import { SERVER_PARAMS } from '../environment/environment';
 Vue.use(VueClipboard);
 export default {
   name: "icons",
@@ -63,7 +63,7 @@ export default {
       deviceList: [],
       polling: null,
       selectedDeviceId: null,
-      SERVER_URL: "http://134.209.101.192:3000",
+      SERVER_URL: SERVER_PARAMS.URL,
     };
   },
   methods: {

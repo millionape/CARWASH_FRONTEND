@@ -77,8 +77,8 @@
             <canvas style="height:100%; width:100%" id="my-chart"></canvas>
           </card>
         </b-col>
-        <br/>
-        <br/>
+        <br />
+        <br />
         <b-col xl="12" class="mb-5 mt-5 mb-xl-0">
           <card header-classes="bg-transparent" class="graphCard">
             <b-row align-v="center" slot="header">
@@ -91,14 +91,14 @@
                   <b-nav-item
                     class="mr-2 mr-md-0"
                     link-classes="py-2 px-3"
-                    @click.prevent="chartTypeSelected = 'month'; initTotalChart()"
+                    @click.prevent="initTotalChart()"
                   >
                     <span class="d-none d-md-block">Week</span>
                     <span class="d-md-none">W</span>
                   </b-nav-item>
                   <b-nav-item
                     link-classes="py-2 px-3"
-                    @click.prevent="chartTypeSelected = 'year'; initTotalChart()"
+                    @click.prevent="initTotalChart2()"
                   >
                     <span class="d-none d-md-block">Month</span>
                     <span class="d-md-none">Y</span>
@@ -106,7 +106,12 @@
                 </b-nav>
               </b-col>
             </b-row>
-            <canvas style="height:100%; width:100%" id="big-chart"></canvas>
+            <div style="height:100%; width:100%" id="chartContainer">
+              <canvas
+                style="height:100% !important; width:100% !important"
+                id="big-chart"
+              ></canvas>
+            </div>
           </card>
         </b-col>
       </b-row>
@@ -141,6 +146,7 @@ import StatsCard from "@/components/Cards/StatsCard";
 // Tables
 import SocialTrafficTable from "./Dashboard/SocialTrafficTable";
 import PageVisitsTable from "./Dashboard/PageVisitsTable";
+import { SERVER_PARAMS } from "../environment/environment";
 
 export default {
   components: {
@@ -148,17 +154,18 @@ export default {
     BaseProgress,
     StatsCard,
     PageVisitsTable,
-    SocialTrafficTable
+    SocialTrafficTable,
   },
   data() {
     return {
-      SERVER_URL: "http://134.209.101.192:3000",
+      SERVER_URL: SERVER_PARAMS.URL,
       // SERVER_URL: "http://0.0.0.0:3000",
       day_total: 0,
       month_total: 0,
       seven_day_total: 0,
       year_total: 0,
-      chartTypeSelected: 'month',
+      chartTypeSelected: "month",
+      myChart: null,
       barChartRender: false,
       bigLineChart: {
         activeIndex: 0,
@@ -166,12 +173,12 @@ export default {
           datasets: [
             {
               label: "Performance",
-              data: [0, 20, 10, 30, 15, 40, 20, 60, 60]
-            }
+              data: [0, 20, 10, 30, 15, 40, 20, 60, 60],
+            },
           ],
-          labels: ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+          labels: ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         },
-        extraOptions: chartConfigs.blueChartOptions
+        extraOptions: chartConfigs.blueChartOptions,
       },
       redBarChart: {
         chartData: {
@@ -179,20 +186,20 @@ export default {
           datasets: [
             {
               label: "Sales",
-              data: [25, 20, 30, 22, 17, 29]
-            }
-          ]
+              data: [25, 20, 30, 22, 17, 29],
+            },
+          ],
         },
-        extraOptions: chartConfigs.blueChartOptions
+        extraOptions: chartConfigs.blueChartOptions,
       },
-      monthChart:{
-        labels:[],
-        data:[],
+      monthChart: {
+        labels: [],
+        data: [],
       },
-      yearChart:{
-        labels:[],
-        data:[],
-      }
+      yearChart: {
+        labels: [],
+        data: [],
+      },
     };
   },
   methods: {
@@ -201,16 +208,20 @@ export default {
         datasets: [
           {
             label: "Performance",
-            data: this.bigLineChart.allData[index]
-          }
+            data: this.bigLineChart.allData[index],
+          },
         ],
-        labels: ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        labels: ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       };
       this.bigLineChart.chartData = chartData;
       this.bigLineChart.activeIndex = index;
     },
     numberWithCommas(x) {
-      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      if (x === null || x === undefined) {
+        x = 0;
+      }
+      x = String(x);
+      return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     async getTotalIncome_day() {
       var m = moment();
@@ -220,7 +231,7 @@ export default {
         .get(
           `${this.SERVER_URL}/getTotalIncomeInDay?site=Rayong-1&sdate=${date}`
         )
-        .then(response => {
+        .then((response) => {
           console.log(response);
           this.day_total = 0;
           if (response.data.length > 0) {
@@ -246,7 +257,7 @@ export default {
             console.log("GROUPED ITEMS :", grouped);
           }
         })
-        .catch(e => {
+        .catch((e) => {
           console.log("ERROR |", e);
         });
     },
@@ -259,15 +270,17 @@ export default {
         .get(
           `${this.SERVER_URL}/getTotalIncomeLast7Days?site=Rayong-1&date=${date}`
         )
-        .then(response => {
-          console.log("7days income :",response);
+        .then((response) => {
+          console.log("7days income :", response);
           this.seven_day_total = 0;
           this.monthChart.data = [];
           this.bigLineChart.chartData.datasets = [];
           if (response.data.length > 0) {
             for (let incomes of response.data) {
               this.seven_day_total += incomes.money;
-              let income_date = moment().date(incomes.day).format("YYYY-MM-DD");
+              let income_date = moment()
+                .date(incomes.day)
+                .format("YYYY-MM-DD");
               this.monthChart.labels.push(income_date);
               this.monthChart.data.push(incomes.money);
               // this.bigLineChart.chartData.labels.push(income_date);
@@ -275,7 +288,7 @@ export default {
             }
           }
         })
-        .catch(e => {
+        .catch((e) => {
           console.log("ERROR |", e);
         });
     },
@@ -288,8 +301,8 @@ export default {
         .get(
           `${this.SERVER_URL}/getTotalIncomeThisYear?site=Rayong-1&date=${date}`
         )
-        .then(response => {
-          console.log("7days income :",response);
+        .then((response) => {
+          console.log("7days income :", response);
           this.year_total = 0;
           // this.bigLineChart.chartData.labels = [];
           // this.bigLineChart.chartData.datasets = [];
@@ -298,15 +311,18 @@ export default {
           if (response.data.length > 0) {
             for (let incomes of response.data) {
               this.year_total += incomes.money;
-              let income_date = moment().date(incomes.month).format("YYYY-MM");
+              console.log("year total: ", this.year_total);
+              let income_date = moment(date)
+                .set("month", incomes.month - 1)
+                .format("YYYY-MM");
               // this.bigLineChart.chartData.labels.push(income_date);
               // this.bigLineChart.chartData.datasets.push(incomes.money);
-              this.yearChart.data.push(incomes.money)
+              this.yearChart.data.push(incomes.money);
               this.yearChart.labels.push(income_date);
             }
           }
         })
-        .catch(e => {
+        .catch((e) => {
           console.log("ERROR |", e);
         });
     },
@@ -318,7 +334,7 @@ export default {
         .get(
           `${this.SERVER_URL}/getTotalIncomeInMonth?site=Rayong-1&sdate=${startOfMonth}`
         )
-        .then(response => {
+        .then((response) => {
           console.log(response);
           this.month_total = 0;
           if (response.data.length > 0) {
@@ -326,7 +342,7 @@ export default {
             console.log("month_total : ", this.month_total);
           }
         })
-        .catch(e => {
+        .catch((e) => {
           console.log("ERROR |", e);
         });
     },
@@ -337,9 +353,9 @@ export default {
         scales: {
           yAxes: [
             {
-              maxBarThickness: 2
-            }
-          ]
+              maxBarThickness: 2,
+            },
+          ],
         },
         dataPointWidth: 20,
         data: {
@@ -350,36 +366,74 @@ export default {
               data: this.redBarChart.chartData.datasets,
               borderColor: "#6E7EF5",
               backgroundColor: "#E75F5B",
-              fill: true
-            }
-          ]
+              fill: true,
+            },
+          ],
         },
         options: {
-          responsive: true
-        }
+          responsive: true,
+        },
       });
+      myChart.update();
     },
     initTotalChart() {
+      document.getElementById("chartContainer").innerHTML = "&nbsp;";
+      document.getElementById("chartContainer").innerHTML = '<canvas style="height:100% !important; width:100% !important" id="big-chart"></canvas>';
       var ctx = document.getElementById("big-chart");
-      var myChart = new Chart(ctx, {
-        type: this.chartTypeSelected === "month" ? "line": "bar",
-        data: {
-          labels: this.chartTypeSelected === "month" ? this.monthChart.labels : this.yearChart.labels,
-          datasets: [
-            {
-              label: "Income",
-              data: this.chartTypeSelected === "month" ? this.monthChart.data : this.yearChart.data,
-              borderColor: "#6E7EF5",
-              backgroundColor: "#6E7EF5",
-              fill: false
-            }
-          ]
-        },
-        options: {
-          responsive: true
-        }
-      });
-    }
+      if (this.myChart !== null) {
+        this.myChart.destroy();
+      }
+      if (ctx !== null) {
+        var myChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: this.monthChart.labels,
+            datasets: [
+              {
+                label: "Income",
+                data: this.monthChart.data,
+                borderColor: "#6E7EF5",
+                backgroundColor: "#6E7EF5",
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+          },
+        });
+        this.myChart = myChart;
+      }
+    },
+    initTotalChart2() {
+      document.getElementById("chartContainer").innerHTML = "&nbsp;";
+      document.getElementById("chartContainer").innerHTML = '<canvas style="height:100% !important; width:100% !important" id="big-chart"></canvas>';
+      var ctx = document.getElementById("big-chart");
+      if (this.myChart !== null) {
+        this.myChart.destroy();
+      }
+      if (ctx !== null) {
+        var myChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: this.yearChart.labels,
+            datasets: [
+              {
+                label: "Income",
+                data: this.yearChart.data,
+                borderColor: "#6E7EF5",
+                backgroundColor: "#6E7EF5",
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+          },
+        });
+        this.myChart = myChart;
+      }
+    },
   },
   mounted() {
     this.initBigChart(0);
@@ -387,7 +441,7 @@ export default {
   async created() {
     let loader = this.$loading.show({
       // Optional parameters
-      color: 'blue',
+      color: "blue",
       canCancel: true,
     });
     await this.getTotalIncome_day();
@@ -397,7 +451,7 @@ export default {
     this.initTotalChart();
     this.initDevicesChart();
     loader.hide();
-  }
+  },
 };
 </script>
 <style lang="scss">

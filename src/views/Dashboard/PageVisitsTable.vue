@@ -47,6 +47,8 @@
 <script>
 import axios from "axios";
 import moment from "moment";
+import { SERVER_PARAMS } from '../../environment/environment';
+
 import {
   Table,
   TableColumn,
@@ -66,7 +68,7 @@ export default {
   data() {
     return {
       polling: null,
-      SERVER_URL: "http://134.209.101.192:3000",
+      SERVER_URL: SERVER_PARAMS.URL,
       tableData: [
         {
           page: "/argon/",
