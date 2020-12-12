@@ -104,6 +104,27 @@ export default {
     };
   },
   methods: {
+    getModeText(mode){
+    //console.log("MODE---> ",mode)
+      if(mode === null){
+        return "";
+      }
+      mode = Number(mode);
+      switch(mode){
+        case 3:
+          return "High Pressure Water";
+        case 4:
+          return "Vacuum Cleaner";
+        case 5:
+          return "Shampoo";
+        case 6:
+          return "Blower";
+        case 7:
+          return "Water";
+        default:
+          return "No mode selected"
+      }
+    },
     async getCurrentStates() {
       await axios
         .get(`${this.SERVER_URL}/getDeviceBySite?site=Rayong-1`)
@@ -111,7 +132,17 @@ export default {
           console.log("DEVICES lIST ", response);
           this.tableData = [];
           if (response.data.length > 0) {
-            this.tableData = response.data;
+            let states = response.data.map(x => {
+              return {
+                currentCredit: x.currentCredit,
+                deviceId: x.deviceId,
+                insertedCredit: x.insertedCredit,
+                onMode: this.getModeText(x.onMode),
+                updatedDate: x.updatedDate,
+                lastInsertCredit: x.lastInsertCredit
+              }
+            })
+            this.tableData = states;
           }
         })
         .catch((e) => {

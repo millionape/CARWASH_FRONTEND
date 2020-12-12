@@ -27,7 +27,10 @@
                 >
                   <div>
                     <i class="fa fa-microchip"></i>
-                    <span>{{ device.deviceId }}</span>
+                    <span :style="getOnlineClass(device.updatedDate)">{{ device.deviceId }}</span>
+                  </div>
+                  <div class="mt-2">
+                    <small style="color: gray;">Last online: {{ device.updatedDate }}</small>
                   </div>
                 </button>
               </b-col>
@@ -67,6 +70,15 @@ export default {
     };
   },
   methods: {
+    getOnlineClass(updatedDate){
+      let nowTime = moment();
+      let deviceTime = moment(updatedDate);
+      var m3 = nowTime.diff(deviceTime,'seconds'); 
+      console.log("now: ",nowTime.format()," deviceTime: ",deviceTime.format())
+      console.log("Time Diff : ",m3," sec")
+      console.log("Updated date class ",updatedDate);
+      return ""
+    },
     async getCurrentStates() {
       await axios
         .get(`${this.SERVER_URL}/getDeviceBySite?site=Rayong-1`)

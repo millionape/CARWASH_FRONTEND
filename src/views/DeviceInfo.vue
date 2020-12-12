@@ -1,42 +1,47 @@
 <template>
   <div class="mt-3">
     <card header-classes="bg-transparent mt-3">
-      <h3 class="mb-0">Current state</h3>
+      <h3 class="mb-0">Current state : [{{deviceId}}]</h3>
       <b-row class="mt-3">
-        <b-col>
+        <b-col xl="2" class="mt-1">
           <stats-card
+            class="h-100"
             title="Current Credit"
             type="gradient-info"
-            :sub-title="deviceCurrentCredit"
+            :sub-title="String(deviceCurrentCredit)"
           >
           </stats-card>
         </b-col>
-        <b-col>
+        <b-col xl="2" class="mt-1">
           <stats-card
+            class="h-100"
             title="Current Mode"
             type="gradient-info"
-            :sub-title="deviceMode"
+            :sub-title="String(deviceMode)"
           >
           </stats-card>
-        </b-col>
-        <b-col>
+        </b-col >
+        <b-col  xl="2" class="mt-1">
           <stats-card
+            class="h-100"
             title="Last Inserted Credit"
             type="gradient-info"
-            :sub-title="deviceLastInsertCredit"
+            :sub-title="String(deviceLastInsertCredit)"
           >
           </stats-card>
         </b-col>
-        <b-col>
+        <b-col cols="12" xl="3" class="mt-1">
           <stats-card
+            class="h-100"
             title="Last Inserted Date"
             type="gradient-info"
             :sub-title="deviceLastInsertDate"
           >
           </stats-card>
         </b-col>
-        <b-col>
+        <b-col cols="12" xl="3" class="mt-1">
           <stats-card
+            class="h-100"
             title="Last Update"
             type="gradient-info"
             :sub-title="deviceUpdatedDate"
@@ -108,6 +113,27 @@ export default {
     };
   },
   methods: {
+  getModeText(mode){
+    //console.log("MODE---> ",mode)
+    if(mode === null){
+      return "";
+    }
+    mode = Number(mode);
+    switch(mode){
+      case 3:
+        return "High Pressure Water";
+      case 4:
+        return "Vacuum Cleaner";
+      case 5:
+        return "Shampoo";
+      case 6:
+        return "Blower";
+      case 7:
+        return "Water";
+      default:
+        return "No mode selected"
+    }
+  },
     pollData() {
       this.polling = setInterval(() => {
         this.getCurrentStates();
@@ -119,7 +145,8 @@ export default {
         .then((response) => {
           console.log("DEVICES info ", response);
           let data = response.data[0];
-          this.deviceMode = data.onMode;
+          this.deviceMode = this.getModeText(data.onMode);
+          console.log("MODE: ",this.deviceMode);
           this.deviceCurrentCredit = data.currentCredit;
           this.deviceLastInsertCredit = data.lastInsertCredit;
           this.deviceLastInsertDate = data.lastInsertDate;
@@ -145,7 +172,16 @@ export default {
         )
         .then((response) => {
           console.log("HISTORY lIST ", response);
-          this.rows = response.data;
+          let history = response.data.map(x => {
+            return {
+              currentCredit: x.currentCredit,
+              deviceId: x.deviceId,
+              insertedCredit: x.insertedCredit,
+              onMode: this.getModeText(x.onMode),
+              updatedDate: x.updatedDate
+            }
+          })
+          this.rows = history;
           loader.hide();
         })
         .catch((e) => {
