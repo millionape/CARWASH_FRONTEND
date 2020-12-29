@@ -53,6 +53,21 @@
     <br />
     <card header-classes="bg-transparent">
       <h3 slot="header" class="mb-0">Event List</h3>
+      <b-form-group label="Event data filters" v-slot="{ ariaDescribedby }">
+      <b-form-radio-group
+        id="radio-group-2"
+        @change="onFilterChanged"
+        v-model="filterSelected"
+        :aria-describedby="ariaDescribedby"
+        name="radio-sub-component"
+      >
+        <b-form-radio value="USER">Show only user event</b-form-radio>
+        <b-form-radio value="INSERTED">Show only money inserted event</b-form-radio>
+        <b-form-radio value="MODE">Show only mode changed event</b-form-radio>
+        <b-form-radio value="ALL">Show all event</b-form-radio>
+      </b-form-radio-group>
+      <br/>
+    </b-form-group>
       <vue-good-table
         :columns="columns"
         :rows="rows"
@@ -63,6 +78,20 @@
           perPageDropdown: [50, 100, 300, 1000],
         }"
       />
+      <br/>
+      <b-row>
+        <b-col cols="3"></b-col>
+        <b-col cols="6">
+          <vue-json-to-csv :json-data="rows"
+            :csv-title="csvTitle"
+            >
+            <button class="buttonStyle1 w-100">
+              <b-button class="w-100" variant="primary">Export data</b-button>
+            </button>
+          </vue-json-to-csv>
+        </b-col>
+        <b-col cols="3"></b-col>
+      </b-row>
     </card>
   </div>
 </template>
@@ -71,14 +100,21 @@ import Vue from "vue";
 import axios from "axios";
 import moment from "moment";
 import { SERVER_PARAMS } from "../environment/environment";
+import VueJsonToCsv from 'vue-json-to-csv'
 
 export default {
   name: "icons",
   props: {
     deviceId: String,
   },
+  components:{
+    VueJsonToCsv
+  },
   data() {
     return {
+      csvTitle: 'Exported event data of device ['+this.deviceId+']',
+      history: [],
+      filterSelected: "USER",
       deviceMode: null,
       deviceCurrentCredit: null,
       deviceLastInsertCredit: null,
@@ -113,6 +149,18 @@ export default {
     };
   },
   methods: {
+    onFilterChanged(event){
+      console.log("EVENT---> ",event)
+      if(event === "ALL"){
+        this.rows = this.history;
+      }else if(event === "USER"){
+        this.rows = this.history.filter(historyEvent => ( historyEvent.insertedCredit !== null || historyEvent.onMode !== ""))
+      }else if(event === "INSERTED"){
+        this.rows = this.history.filter(historyEvent => ( historyEvent.insertedCredit !== null ))
+      }else if(event === "MODE"){
+        this.rows = this.history.filter(historyEvent => ( historyEvent.onMode !== "" ))
+      }
+    },
   getModeText(mode){
     //console.log("MODE---> ",mode)
     if(mode === null){
@@ -168,7 +216,7 @@ export default {
       var edate = moment().format("YYYY-MM-DD HH:mm:ss");
       await axios
         .get(
-          `${this.SERVER_URL}/getTransectionByDeviceId?deviceId=${deviceId}&sdate=${sdate}&edate=${edate}&limit=2000`
+          `${this.SERVER_URL}/getTransectionByDeviceId?deviceId=${deviceId}&sdate=${sdate}&edate=${edate}&limit=3000`
         )
         .then((response) => {
           console.log("HISTORY lIST ", response);
@@ -181,7 +229,16 @@ export default {
               updatedDate: x.updatedDate
             }
           })
-          this.rows = history;
+          this.history = history;
+          if(this.filterSelected === "ALL"){
+            this.rows = this.history;
+          }else if(this.filterSelected === "USER"){
+            this.rows = this.history.filter(historyEvent => ( historyEvent.insertedCredit !== null || historyEvent.onMode !== ""))
+          }else if(this.filterSelected === "INSERTED"){
+            this.rows = this.history.filter(historyEvent => ( historyEvent.insertedCredit !== null ))
+          }else if(this.filterSelected === "MODE"){
+            this.rows = this.history.filter(historyEvent => ( historyEvent.onMode !== "" ))
+          }
           loader.hide();
         })
         .catch((e) => {
@@ -200,4 +257,13 @@ export default {
   },
 };
 </script>
-<style></style>
+<style scoped>
+  .buttonStyle1 {
+     background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+  }
+</style>

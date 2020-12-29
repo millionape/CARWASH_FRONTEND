@@ -72,9 +72,21 @@
                 <h6 class="text-uppercase text-muted ls-1 mb-1">Income</h6>
                 <h5 class="h3 mb-0">Current income by devices</h5>
               </b-col>
+              <vue-json-to-csv :json-data="redBarChartDataExport"
+                :csv-title="redBarCSVTitle"
+                >
+                <button class="buttonStyle1 w-100">
+                  <b-button class="w-100" variant="primary">Export data</b-button>
+                </button>
+              </vue-json-to-csv>
             </b-row>
+            
 
             <canvas style="height:100%; width:100%" id="my-chart"></canvas>
+            <br/>
+            <br/>
+            <div>
+            </div>
           </card>
         </b-col>
         <br />
@@ -105,6 +117,13 @@
                   </b-nav-item>
                 </b-nav>
               </b-col>
+              <vue-json-to-csv :json-data="selectExport"
+                :csv-title="wmExportName"
+                >
+                <button class="buttonStyle1 w-100">
+                  <b-button class="w-100" variant="primary">Export data</b-button>
+                </button>
+              </vue-json-to-csv>
             </b-row>
             <div style="height:100%; width:100%" id="chartContainer">
               <canvas
@@ -147,6 +166,7 @@ import StatsCard from "@/components/Cards/StatsCard";
 import SocialTrafficTable from "./Dashboard/SocialTrafficTable";
 import PageVisitsTable from "./Dashboard/PageVisitsTable";
 import { SERVER_PARAMS } from "../environment/environment";
+import VueJsonToCsv from 'vue-json-to-csv'
 
 export default {
   components: {
@@ -155,6 +175,7 @@ export default {
     StatsCard,
     PageVisitsTable,
     SocialTrafficTable,
+    VueJsonToCsv
   },
   data() {
     return {
@@ -162,9 +183,15 @@ export default {
       // SERVER_URL: "http://0.0.0.0:3000",
       day_total: 0,
       month_total: 0,
+      wmExportName: '',
+      selectExport: [],
       seven_day_total: 0,
       year_total: 0,
+      monthlyDataExport: [],
+      weeklyDataExport: [],
       chartTypeSelected: "month",
+      redBarChartDataExport: [],
+      redBarCSVTitle: 'Exported income data by device on date '+moment().format(),
       myChart: null,
       barChartRender: false,
       bigLineChart: {
@@ -235,6 +262,7 @@ export default {
           console.log(response);
           this.day_total = 0;
           if (response.data.length > 0) {
+            this.redBarChartDataExport = []
             for (let transection of response.data) {
               this.day_total += transection.insertedCredit;
             }
@@ -245,6 +273,10 @@ export default {
             this.redBarChart.chartData.labels = [];
             this.redBarChart.chartData.datasets = [];
             for (let key in grouped) {
+              let exportFormat = {
+                deviceId: key,
+                income: 0
+              }
               this.redBarChart.chartData.labels.push(key);
               let tmp_counter = 0;
               console.log("push key :", key);
@@ -252,8 +284,11 @@ export default {
                 tmp_counter += items.insertedCredit;
                 // console.log("add money :",tmp_counter);
               }
+              exportFormat.income = tmp_counter;
+              this.redBarChartDataExport.push(exportFormat);
               this.redBarChart.chartData.datasets.push(tmp_counter);
             }
+            
             console.log("GROUPED ITEMS :", grouped);
           }
         })
@@ -274,6 +309,7 @@ export default {
           console.log("7days income :", response);
           this.seven_day_total = 0;
           this.monthChart.data = [];
+          this.weeklyDataExport = [];
           this.bigLineChart.chartData.datasets = [];
           if (response.data.length > 0) {
             for (let incomes of response.data) {
@@ -283,10 +319,15 @@ export default {
                 .format("YYYY-MM-DD");
               this.monthChart.labels.push(income_date);
               this.monthChart.data.push(incomes.money);
+              this.weeklyDataExport.push({
+                date: income_date,
+                imcome: incomes.money
+              })
               // this.bigLineChart.chartData.labels.push(income_date);
               // this.bigLineChart.chartData.datasets.push(incomes.money);
             }
           }
+          
         })
         .catch((e) => {
           console.log("ERROR |", e);
@@ -304,6 +345,7 @@ export default {
         .then((response) => {
           console.log("7days income :", response);
           this.year_total = 0;
+          this.monthlyDataExport = [];
           // this.bigLineChart.chartData.labels = [];
           // this.bigLineChart.chartData.datasets = [];
           this.yearChart.labels = [];
@@ -319,6 +361,10 @@ export default {
               // this.bigLineChart.chartData.datasets.push(incomes.money);
               this.yearChart.data.push(incomes.money);
               this.yearChart.labels.push(income_date);
+              this.monthlyDataExport.push({
+                month: income_date,
+                imcome: incomes.money
+              })
             }
           }
         })
@@ -377,6 +423,8 @@ export default {
       myChart.update();
     },
     initTotalChart() {
+      this.wmExportName = "Weekly report_"+moment().format();
+      this.selectExport = this.weeklyDataExport;
       document.getElementById("chartContainer").innerHTML = "&nbsp;";
       document.getElementById("chartContainer").innerHTML = '<canvas style="height:100% !important; width:100% !important" id="big-chart"></canvas>';
       var ctx = document.getElementById("big-chart");
@@ -406,6 +454,8 @@ export default {
       }
     },
     initTotalChart2() {
+      this.wmExportName = "Monthly report_"+moment().format();
+      this.selectExport = this.monthlyDataExport;
       document.getElementById("chartContainer").innerHTML = "&nbsp;";
       document.getElementById("chartContainer").innerHTML = '<canvas style="height:100% !important; width:100% !important" id="big-chart"></canvas>';
       var ctx = document.getElementById("big-chart");
@@ -465,4 +515,12 @@ export default {
 .statusCard {
   height: 8rem !important;
 }
+.buttonStyle1 {
+     background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+  }
 </style>

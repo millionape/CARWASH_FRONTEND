@@ -21,6 +21,7 @@ import VueGoodTablePlugin from 'vue-good-table';
 import Notifications from 'vue-notification';
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
+import VueJsonToCsv from 'vue-json-to-csv'
 
 
 import 'vue-good-table/dist/vue-good-table.css'
@@ -33,6 +34,7 @@ Vue.use(DashboardPlugin);
 Vue.use(VueGoodTablePlugin);
 Vue.use(Notifications);
 Vue.use(Loading);
+Vue.use(VueJsonToCsv);
 
 
 /* eslint-disable no-new */
